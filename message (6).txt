@@ -1,0 +1,145 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local autoFarming = false
+
+local function autoFarmCoins(player)
+    local coinSpawns = workspace:FindFirstChild("CoinSpawns")
+    
+    if coinSpawns then
+        while autoFarming do
+            for _, spawnPoint in ipairs(coinSpawns:GetChildren()) do
+                if spawnPoint:IsA("BasePart") and autoFarming then
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        player.Character:SetPrimaryPartCFrame(spawnPoint.CFrame)
+                        wait(1)  -- Adjust this delay as needed
+                    end
+                end
+            end
+        end
+    else
+        warn("CoinSpawns not found in workspace")
+    end
+end
+
+local function onCharacterAdded(character)
+    -- Wait for the character's HumanoidRootPart to be fully loaded
+    while not character:FindFirstChild("HumanoidRootPart") do
+        wait()
+    end
+end
+
+local function createGUI()
+    local screenGui = Instance.new("ScreenGui")
+    local frame = Instance.new("Frame")
+    local titleLabel = Instance.new("TextLabel")
+    local toggleButton = Instance.new("TextButton")
+    local closeButton = Instance.new("TextButton")
+    local minimizeButton = Instance.new("TextButton")
+    local reopenButton = Instance.new("TextButton")
+    local uiCorner = Instance.new("UICorner")
+
+    screenGui.Name = "AutoFarmGui"
+    screenGui.Parent = game.CoreGui
+
+    frame.Name = "MainFrame"
+    frame.Parent = screenGui
+    frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+    frame.Size = UDim2.new(0, 400, 0, 200)
+    frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
+    local frameCorner = uiCorner:Clone()
+    frameCorner.Parent = frame
+
+    titleLabel.Name = "TitleLabel"
+    titleLabel.Parent = frame
+    titleLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    titleLabel.Size = UDim2.new(1, 0, 0, 50)
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.Text = "Auto Farm Hub"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 24
+    local titleLabelCorner = uiCorner:Clone()
+    titleLabelCorner.Parent = titleLabel
+
+    toggleButton.Name = "ToggleButton"
+    toggleButton.Parent = frame
+    toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    toggleButton.Position = UDim2.new(0.25, 0, 0.5, 0)
+    toggleButton.Size = UDim2.new(0.5, 0, 0.25, 0)
+    toggleButton.Font = Enum.Font.SourceSans
+    toggleButton.Text = "Auto Farm: Off"
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.TextSize = 24
+    local toggleButtonCorner = uiCorner:Clone()
+    toggleButtonCorner.Parent = toggleButton
+
+    closeButton.Name = "CloseButton"
+    closeButton.Parent = frame
+    closeButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    closeButton.Position = UDim2.new(1, -30, 0, 0)
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Font = Enum.Font.SourceSans
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 24
+    local closeButtonCorner = uiCorner:Clone()
+    closeButtonCorner.Parent = closeButton
+
+    minimizeButton.Name = "MinimizeButton"
+    minimizeButton.Parent = frame
+    minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    minimizeButton.Position = UDim2.new(1, -60, 0, 0)
+    minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    minimizeButton.Font = Enum.Font.SourceSans
+    minimizeButton.Text = "_"
+    minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeButton.TextSize = 24
+    local minimizeButtonCorner = uiCorner:Clone()
+    minimizeButtonCorner.Parent = minimizeButton
+
+    reopenButton.Name = "ReopenButton"
+    reopenButton.Parent = screenGui
+    reopenButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    reopenButton.Position = UDim2.new(0, 10, 1, -50)
+    reopenButton.Size = UDim2.new(0, 100, 0, 30)
+    reopenButton.Font = Enum.Font.SourceSans
+    reopenButton.Text = "Open Auto Farm"
+    reopenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    reopenButton.TextSize = 18
+    reopenButton.Visible = false
+    local reopenButtonCorner = uiCorner:Clone()
+    reopenButtonCorner.Parent = reopenButton
+
+    toggleButton.MouseButton1Click:Connect(function()
+        autoFarming = not autoFarming
+        toggleButton.Text = "Auto Farm: " .. (autoFarming and "On" or "Off")
+        if autoFarming then
+            spawn(function() autoFarmCoins(localPlayer) end)
+        end
+    end)
+
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    minimizeButton.MouseButton1Click:Connect(function()
+        frame.Visible = false
+        reopenButton.Visible = true
+    end)
+
+    reopenButton.MouseButton1Click:Connect(function()
+        frame.Visible = true
+        reopenButton.Visible = false
+    end)
+end
+
+if localPlayer then
+    if localPlayer.Character then
+        onCharacterAdded(localPlayer.Character)
+    end
+    localPlayer.CharacterAdded:Connect(onCharacterAdded)
+    createGUI()
+else
+    warn("LocalPlayer not found")
+end
